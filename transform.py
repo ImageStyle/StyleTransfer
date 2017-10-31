@@ -36,22 +36,18 @@ def Conv2DTransposeInstanceNorm(inputs, filters, kernel_size,
     return norm
 
 def Conv2DResidualBlock(inputs):
-    tmp     = Conv2DInstanceNorm(inputs, 64, 3)
-    tmp2    = Conv2DInstanceNorm(tmp, 64, 3, relu=False)
+    tmp     = Conv2DInstanceNorm(inputs, 32, 3)
+    tmp2    = Conv2DInstanceNorm(tmp, 32, 3, relu=False)
     return keras.layers.add([inputs, tmp2])
 
 def TransformNet(inputs):
     conv1   = Conv2DInstanceNorm(inputs, 16, 9)
     conv2   = Conv2DInstanceNorm(conv1, 32, 3, strides=2)
-    conv3   = Conv2DInstanceNorm(conv2, 64, 3, strides=2)
-    resid1  = Conv2DResidualBlock(conv3)
+    resid1  = Conv2DResidualBlock(conv2)
     resid2  = Conv2DResidualBlock(resid1)
     resid3  = Conv2DResidualBlock(resid2)
-    resid4  = Conv2DResidualBlock(resid3)
-    resid5  = Conv2DResidualBlock(resid4)
-    conv_t1 = Conv2DTransposeInstanceNorm(resid5, 32, 3, strides=2)
-    conv_t2 = Conv2DTransposeInstanceNorm(conv_t1, 16, 3, strides=2)
-    conv_t3 = Conv2DInstanceNorm(conv_t2, 3, 9, relu=False)
-    tanh = Activation('tanh')(conv_t3)
+    conv_t1 = Conv2DTransposeInstanceNorm(resid3, 16, 3, strides=2)
+    conv_t2 = Conv2DInstanceNorm(conv_t1, 3, 9, relu=False)
+    tanh = Activation('tanh')(conv_t2)
     preds = Lambda(lambda x : x * 150 + 255./2)(tanh)
     return preds
